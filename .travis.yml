@@ -9,4 +9,4 @@ matrix:
           services:
               - docker
           install: docker info
-          script: bash .ci/publish-image.sh
+          script: travis_wait 60 bash .ci/publish-image.sh
