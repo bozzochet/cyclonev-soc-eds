@@ -1,0 +1,12 @@
+branches:
+    only:
+        - master
+
+matrix:
+    include:
+        - language: generic
+          sudo: true
+          services:
+              - docker
+          install: docker info
+          script: bash .ci/publish-image.sh
