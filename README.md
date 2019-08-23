@@ -1,11 +1,12 @@
 # Usage
-
-## build
+## build (optional)
+The prebuilt container is hosted on Docker Hub.  If you wish to build it yourself, use the following command.
 ```shell
-docker build -t cyclonev-soc-eds .
+docker build -t rditech/cyclonev-soc-eds .
 ```
 
 ## run container and mount current directory
 ```shell
-docker run -it --rm -w $PWD:/mnt cycleonv-soc-eds
+docker run -it --rm -w $PWD:/mnt rditech/cycleonv-soc-eds
 ```
+The above command puts you into the SoC EDS embedded command shell.
