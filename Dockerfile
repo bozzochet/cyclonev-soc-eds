@@ -9,7 +9,7 @@ FROM ubuntu:18.04
 WORKDIR /root
 
 RUN apt-get update \
-&&  apt-get -y install \
+&&  apt-get -y -q install \
         wget \
 &&  rm -rf /var/lib/apt/lists/*
 
@@ -38,7 +38,7 @@ RUN wget -q -O soc-eds.run \
 # Install DS-5
 RUN dpkg --add-architecture i386 \
 &&  apt-get update \
-&&  apt-get -y install \
+&&  apt-get -y -q install \
         libasound2 \
         libatk1.0-0 \
         libcairo2 \
@@ -60,7 +60,7 @@ RUN cd /opt/intelFPGA/18.1/embedded/ds-5_installer \
 
 # Set the locale
 RUN apt-get update \
-&&  apt-get -y install \
+&&  apt-get -y -q install \
         locales \
 &&  rm -rf /var/lib/apt/lists/*
 
@@ -71,7 +71,7 @@ ENV LANG=en_US.UTF-8 \
 
 # Resolve malloc() issues
 RUN apt-get update \
-&&  apt-get -y install \
+&&  apt-get -y -q install \
         libtcmalloc-minimal4 \
 &&  rm -rf /var/lib/apt/lists/*
 
@@ -82,7 +82,7 @@ RUN cp /usr/lib/x86_64-linux-gnu/libstdc++.so.6 \
 
 # Other required tools
 RUN apt-get update \
-&&  apt-get -y install \
+&&  apt-get -y -q install \
         gcc \
 &&  rm -rf /var/lib/apt/lists/*
 
