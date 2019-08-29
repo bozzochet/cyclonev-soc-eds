@@ -4,7 +4,7 @@
 # https://github.com/chriz2600/quartus-lite and
 # https://github.com/machinaut/quartus-docker
 
-FROM ubuntu:18.04
+FROM dorowu/ubuntu-desktop-lxde-vnc:bionic
 
 WORKDIR /root
 
