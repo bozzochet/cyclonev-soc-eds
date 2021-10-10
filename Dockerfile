@@ -4,70 +4,55 @@
 # https://github.com/chriz2600/quartus-lite and
 # https://github.com/machinaut/quartus-docker
 
+#FROM ubuntu:18.04
+# 20.04 seems not permitting the installation of one of:
+#libwebkit-1.0.so.2
+#libwebkitgtk-3.0.so.0
+#libwebkitgtk-1.0.so.0
+#FROM ubuntu:20.04
+
 FROM dorowu/ubuntu-desktop-lxde-vnc:bionic
 
 WORKDIR /root
 
-RUN apt-get update \
-        > /dev/null \
-&&  apt-get -y -qq install \
-        wget \
-        > /dev/null \
+RUN export DEBIAN_FRONTEND=noninteractive \
+&&  apt-get update > /dev/null \
+&&  apt-get -y -qq install wget > /dev/null \
 &&  rm -rf /var/lib/apt/lists/*
 
 # Install Quartus Lite and Cyclone V files
-RUN wget -q \
-        http://download.altera.com/akdlm/software/acdsinst/18.1std/625/ib_installers/cyclonev-18.1.0.625.qdz \
-&&  wget -q -O quartus-lite.run \
-        http://download.altera.com/akdlm/software/acdsinst/18.1std/625/ib_installers/QuartusLiteSetup-18.1.0.625-linux.run \
+RUN wget -q http://download.altera.com/akdlm/software/acdsinst/20.1std/711/ib_installers/cyclonev-20.1.0.711.qdz \
+&&  wget -q -O quartus-lite.run http://download.altera.com/akdlm/software/acdsinst/20.1std/711/ib_installers/QuartusLiteSetup-20.1.0.711-linux.run \
 &&  chmod +x quartus-lite.run \
-&&  ./quartus-lite.run \
-        --mode unattended \
-        --installdir /opt/intelFPGA/18.1 \
-        --accept_eula yes \
+&&  ./quartus-lite.run --mode unattended --installdir /opt/intelFPGA/20.1 --accept_eula yes \
 &&  rm -rf *
 
 # Install SoC EDS
-RUN wget -q -O soc-eds.run \
-        http://download.altera.com/akdlm/software/acdsinst/18.1std/625/ib_installers/SoCEDSSetup-18.1.0.625-linux.run \
+RUN wget -q -O soc-eds.run http://download.altera.com/akdlm/software/acdsinst/20.1std/711/ib_installers/SoCEDSSetup-20.1.0.711-linux.run \
 &&  chmod +x soc-eds.run \
-&&  ./soc-eds.run \
-        --mode unattended \
-        --installdir /opt/intelFPGA/18.1 \
-        --accept_eula yes \
+&&  ./soc-eds.run --mode unattended --installdir /opt/intelFPGA/20.1 --accept_eula yes \
 &&  rm -rf *
 
-# Install DS-5
-RUN dpkg --add-architecture i386 \
-&&  apt-get update \
-        > /dev/null \
-&&  apt-get -y -qq install \
-        libasound2 \
-        libatk1.0-0 \
-        libcairo2 \
-        libglu1-mesa \
-        libgtk2.0-0 \
-        libxt6 \
-        libxtst6 \
-        libc6:i386 \
-        libstdc++6:i386 \
-        libz1:i386 \
-        libwebkitgtk-3.0-0 \
-        > /dev/null \
+# Install DS-5 pre-requisites
+RUN export DEBIAN_FRONTEND=noninteractive \
+&&  apt-get update > /dev/null \
+&&  ln -fs /usr/share/zoneinfo/Europe/Rome /etc/localtime > /dev/null \
+&&  apt-get install -y tzdata > /dev/null \
+&&  dpkg-reconfigure --frontend noninteractive tzdata > /dev/null \
+&&  apt-get -y -qq install libwebkit2gtk-4.0-37 > /dev/null \
 &&  rm -rf /var/lib/apt/lists/*
 
-RUN cd /opt/intelFPGA/18.1/embedded/ds-5_installer \
-&&  ./install.sh \
-        --i-agree-to-the-contained-eula \
-        --no-interactive \
-        -d /opt/intelFPGA/18.1/embedded/ds-5
+# Install DS-5
+RUN wget -q https://download.altera.com/akdlm/software/armds/2021.1/linux64/DS000-BN-00001-r21p1-00rel0.tgz \
+&&  tar -xf DS000-BN-00001-r21p1-00rel0.tgz \
+&&  cd DS000-BN-00001-r21p1-00rel0 \
+&&  ./armds-2021.1.sh --no-interactive -d/opt/arm/developmentstudio-2021.1 --i-agree-to-the-contained-eula \
+&& rm -rf *
 
 # Set the locale
-RUN apt-get update \
-        > /dev/null \
-&&  apt-get -y -qq install \
-        locales \
-        > /dev/null \
+RUN export DEBIAN_FRONTEND=noninteractive \
+&&  apt-get update > /dev/null \
+&&  apt-get -y -qq install locales > /dev/null \
 &&  rm -rf /var/lib/apt/lists/*
 
 RUN locale-gen en_US.UTF-8  
@@ -75,37 +60,22 @@ ENV LANG=en_US.UTF-8 \
     LANGUAGE=en_US:en \
     LC_ALL=en_US.UTF-8
 
-# Resolve malloc() issues
-RUN apt-get update \
-        > /dev/null \
-&&  apt-get -y -qq install \
-        libtcmalloc-minimal4 \
-        > /dev/null \
-&&  rm -rf /var/lib/apt/lists/*
-
-ENV LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libtcmalloc_minimal.so.4
-
-RUN cp /usr/lib/x86_64-linux-gnu/libstdc++.so.6 \
-        /opt/intelFPGA/18.1/quartus/linux64/
-
 # Other required tools and libraries
-RUN apt-get update \
-        > /dev/null \
-&&  apt-get -y -qq install \
-        gcc \
-        u-boot-tools \
-        device-tree-compiler \
-        > /dev/null \
+RUN export DEBIAN_FRONTEND=noninteractive \
+&&  apt-get update > /dev/null \
+&&  apt-get -y -qq install gcc u-boot-tools device-tree-compiler build-essential > /dev/null \
 &&  rm -rf /var/lib/apt/lists/*
 
-RUN wget -q -O libpng12.deb \
-        http://security.ubuntu.com/ubuntu/pool/main/libp/libpng/libpng12-0_1.2.54-1ubuntu1.1_amd64.deb \
-&&  apt-get -y -qq install \
-        ./libpng12.deb \
-        > /dev/null \
-&&  rm -rf *
+# Install compiler
+RUN wget https://developer.arm.com/-/media/Files/downloads/gnu-a/10.3-2021.07/binrel/gcc-arm-10.3-2021.07-x86_64-arm-none-linux-gnueabihf.tar.asc \
+&& tar -xf gcc-arm-10.3-2021.07-x86_64-arm-none-linux-gnueabihf.tar.asc \
+&& rm -Rf gcc-arm-10.3-2021.07-x86_64-arm-none-linux-gnueabihf.tar.asc \
+&& cd /root/gcc-arm-10.3-2021.07-x86_64-arm-none-linux-gnueabihf/bin \
+&& ln -s arm-none-linux-gnueabihf-g++ arm-linux-gnueabihf-g++
+ENV PATH="/root/gcc-arm-10.3-2021.07-x86_64-arm-none-linux-gnueabihf/bin:${PATH}"
 
 # Set default behavior
-WORKDIR /opt/intelFPGA/18.1/embedded
-
+WORKDIR /opt/intelFPGA/20.1/embedded
 CMD bash embedded_command_shell.sh
+
+#WORKDIR /mnt
