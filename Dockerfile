@@ -18,6 +18,7 @@ WORKDIR /root
 RUN export DEBIAN_FRONTEND=noninteractive \
 &&  apt-get update > /dev/null \
 &&  apt-get -y -qq install wget > /dev/null \
+&&  apt-get -y -qq install git > /dev/null \
 &&  rm -rf /var/lib/apt/lists/*
 
 # Install Quartus Lite and Cyclone V files
@@ -66,13 +67,20 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 &&  apt-get -y -qq install gcc u-boot-tools device-tree-compiler build-essential > /dev/null \
 &&  rm -rf /var/lib/apt/lists/*
 
+# Install compiler (directly from ARM: too new and we found some linked libs needing GLIBC_2.28, non present on the boards that have GCC Linero 6.2)
+#RUN wget https://developer.arm.com/-/media/Files/downloads/gnu-a/10.3-2021.07/binrel/gcc-arm-10.3-2021.07-x86_64-arm-none-linux-gnueabihf.tar.asc \
+#&& tar -xf gcc-arm-10.3-2021.07-x86_64-arm-none-linux-gnueabihf.tar.asc \
+#&& rm -Rf gcc-arm-10.3-2021.07-x86_64-arm-none-linux-gnueabihf.tar.asc \
+#&& cd /root/gcc-arm-10.3-2021.07-x86_64-arm-none-linux-gnueabihf/bin \
+#&& ln -s arm-none-linux-gnueabihf-g++ arm-linux-gnueabihf-g++
+#ENV PATH="/root/gcc-arm-10.3-2021.07-x86_64-arm-none-linux-gnueabihf/bin:${PATH}"
+
 # Install compiler
-RUN wget https://developer.arm.com/-/media/Files/downloads/gnu-a/10.3-2021.07/binrel/gcc-arm-10.3-2021.07-x86_64-arm-none-linux-gnueabihf.tar.asc \
-&& tar -xf gcc-arm-10.3-2021.07-x86_64-arm-none-linux-gnueabihf.tar.asc \
-&& rm -Rf gcc-arm-10.3-2021.07-x86_64-arm-none-linux-gnueabihf.tar.asc \
-&& cd /root/gcc-arm-10.3-2021.07-x86_64-arm-none-linux-gnueabihf/bin \
-&& ln -s arm-none-linux-gnueabihf-g++ arm-linux-gnueabihf-g++
-ENV PATH="/root/gcc-arm-10.3-2021.07-x86_64-arm-none-linux-gnueabihf/bin:${PATH}"
+RUN wget https://releases.linaro.org/components/toolchain/binaries/6.2-2016.11/arm-linux-gnueabihf/gcc-linaro-6.2.1-2016.11-x86_64_arm-linux-gnueabihf.tar.xz \
+&& tar -xf gcc-linaro-6.2.1-2016.11-x86_64_arm-linux-gnueabihf.tar.xz \
+&& rm -Rf gcc-linaro-6.2.1-2016.11-x86_64_arm-linux-gnueabihf.tar.xz \
+&& cd /root/gcc-linaro-6.2.1-2016.11-x86_64_arm-linux-gnueabihf/bin
+ENV PATH="/root/gcc-linaro-6.2.1-2016.11-x86_64_arm-linux-gnueabihf/bin:${PATH}"
 
 # Set default behavior
 WORKDIR /opt/intelFPGA/20.1/embedded
